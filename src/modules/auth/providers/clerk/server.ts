@@ -1,8 +1,9 @@
-import { currentUser } from '@clerk/nextjs/server'
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import type { NextRequest } from 'next/server'
 import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
+import { publicPaths } from './proxy'
 
 function toUser(clerkUser: {
   id: string
@@ -31,8 +32,11 @@ const clerkServerOps: AuthServerOps = {
   },
 
   async signOut() {
-    // Clerk sign-out is client-side (useClerk().signOut())
-    // Server-side we just redirect; Clerk's session cookie is cleared client-side
+    const { sessionId } = await auth()
+    if (sessionId) {
+      const client = await clerkClient()
+      await client.sessions.revokeSession(sessionId)
+    }
     redirect('/sign-in')
   },
 
@@ -41,7 +45,7 @@ const clerkServerOps: AuthServerOps = {
     return undefined
   },
 
-  publicPaths: ['/sign-in', '/sign-up', '/'],
+  publicPaths,
 }
 
 export default clerkServerOps

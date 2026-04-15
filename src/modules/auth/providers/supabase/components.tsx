@@ -81,6 +81,7 @@ export function SignUpForm() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState<string | null>(null)
+  const [message, setMessage]   = useState<string | null>(null)
   const [loading, setLoading]   = useState(false)
   const router = useRouter()
 
@@ -88,9 +89,10 @@ export function SignUpForm() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setMessage(null)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
 
     if (error) {
       setError(error.message)
@@ -99,6 +101,13 @@ export function SignUpForm() {
     }
 
     setLoading(false)
+
+    if (!data.session) {
+      // Email confirmation is required — user is not yet authenticated
+      setMessage('Check your email to confirm your account.')
+      return
+    }
+
     router.push('/dashboard')
     router.refresh()
   }
@@ -132,7 +141,8 @@ export function SignUpForm() {
           className="px-3 py-2 border border-[var(--color-border)] rounded-[var(--radius)] bg-[var(--color-surface)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
         />
       </div>
-      {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
+      {error   && <p className="text-sm text-[var(--color-error)]">{error}</p>}
+      {message && <p className="text-sm text-[var(--color-text-secondary)]">{message}</p>}
       <button
         type="submit"
         disabled={loading}
