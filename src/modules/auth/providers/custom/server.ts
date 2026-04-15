@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server'
+import type { AuthServerOps } from '../../interface'
 
-const NOT_CONFIGURED = 'Custom auth not configured. Implement the auth methods in providers/custom/server.ts.'
+const NOT_CONFIGURED = 'Custom auth not configured. Implement AuthServerOps in providers/custom/server.ts.'
 
-const customServerOps = {
+const customServerOps: AuthServerOps = {
   async getUser() {
     throw new Error(NOT_CONFIGURED)
   },
