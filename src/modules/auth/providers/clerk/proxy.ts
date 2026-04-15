@@ -10,3 +10,7 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     await auth.protect()
   }
 })
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+}

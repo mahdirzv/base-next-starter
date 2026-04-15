@@ -32,6 +32,7 @@ export function SignInForm() {
       return
     }
 
+    setLoading(false)
     router.push('/dashboard')
     router.refresh()
   }
@@ -97,6 +98,7 @@ export function SignUpForm() {
       return
     }
 
+    setLoading(false)
     router.push('/dashboard')
     router.refresh()
   }
