@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Base Next.js Starter
 
-## Getting Started
+A production-ready Next.js 16 starter with a config-driven auth module and a token-based UI system. Swap auth providers and themes via environment variables — no code changes needed.
 
-First, run the development server:
+---
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # fill in your keys
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Auth providers
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Set `AUTH_PROVIDER` in `.env.local`. Default is `clerk`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Clerk (default)
 
-## Learn More
+```env
+AUTH_PROVIDER=clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Supabase
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+AUTH_PROVIDER=supabase
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Firebase and Custom providers are stubbed — implement `src/modules/auth/providers/{firebase,custom}/server.ts` to activate.
 
-## Deploy on Vercel
+## Themes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set `THEME_PRESET` in `.env.local`. Options: `neutral` (default), `vivid`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+THEME_PRESET=vivid
+```
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start dev server |
+| `pnpm build` | Production build |
+| `pnpm test` | Run tests (40 tests) |
+| `pnpm lint` | Lint |
+
+## Project structure
+
+```
+src/
+  config/          # Reads env vars, exports typed config
+  lib/             # Shared utilities (cn)
+  modules/
+    auth/          # Auth module — provider-agnostic public API
+      providers/
+        clerk/     # Clerk implementation (default)
+        supabase/  # Supabase implementation
+        firebase/  # Stub
+        custom/    # Stub
+    ui/            # UI module — tokens, themes, components
+      tokens/      # CSS custom property definitions
+      themes/      # Preset values (neutral, vivid)
+      components/  # shadcn primitives (Button, Card, Badge, Input, Label)
+  app/
+    (auth)/        # sign-in, sign-up pages
+    (protected)/   # dashboard (requires auth)
+proxy.ts           # Next.js 16 middleware (replaces middleware.ts)
+```
+
+## Working with an AI agent?
+
+Send [`SETUP_FOR_AGENTS.md`](./SETUP_FOR_AGENTS.md) to your agent instead of this file. It contains the full technical context, module contracts, known gotchas, and extension patterns — structured for machine consumption.
