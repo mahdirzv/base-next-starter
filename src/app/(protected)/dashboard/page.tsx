@@ -1,6 +1,8 @@
 import { requireUser, signOut } from '@/modules/auth'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/modules/ui'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const user = await requireUser()
 

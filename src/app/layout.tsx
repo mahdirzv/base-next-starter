@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   description: 'Base Next.js starter',
 }
 
+// ClerkProvider requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to be set.
+// When not configured (e.g. using a different auth provider), render without it.
+const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const theme = getTheme(config.theme.preset)
 
@@ -23,9 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style>{`:root { ${themeVars} }`}</style>
       </head>
       <body>
-        <ClerkProvider>
-          {children}
-        </ClerkProvider>
+        {clerkKey ? (
+          <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
+        ) : (
+          children
+        )}
       </body>
     </html>
   )

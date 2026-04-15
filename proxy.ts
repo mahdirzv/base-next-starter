@@ -13,4 +13,9 @@
  */
 
 // ─── Clerk (default) ──────────────────────────────────────────────────────────
-export { proxy, config } from '@/modules/auth/providers/clerk/proxy'
+// config must be defined directly here — Next.js cannot statically analyze a re-export
+export { proxy } from '@/modules/auth/providers/clerk/proxy'
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+}
