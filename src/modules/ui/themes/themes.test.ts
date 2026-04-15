@@ -3,7 +3,10 @@ import { neutralTheme } from './neutral'
 import { vividTheme } from './vivid'
 import { getTheme } from './index'
 
+// Every CSS var that both themes must define.
+// Derived from the union of token file references so tests stay in sync with the token layer.
 const REQUIRED_TOKENS = [
+  // Colors
   '--color-background',
   '--color-surface',
   '--color-border',
@@ -14,8 +17,41 @@ const REQUIRED_TOKENS = [
   '--color-success',
   '--color-warning',
   '--color-error',
+  // Radius
   '--radius',
+  '--radius-sm',
+  '--radius-md',
+  '--radius-lg',
+  // Spacing
+  '--spacing-1',
+  '--spacing-2',
+  '--spacing-3',
+  '--spacing-4',
+  '--spacing-6',
+  '--spacing-8',
+  '--spacing-12',
+  '--spacing-16',
+  // Typography
   '--font-sans',
+  '--font-mono',
+  '--font-size-xs',
+  '--font-size-sm',
+  '--font-size-base',
+  '--font-size-lg',
+  '--font-size-xl',
+  '--font-size-2xl',
+  '--font-size-3xl',
+  '--font-weight-normal',
+  '--font-weight-medium',
+  '--font-weight-semibold',
+  '--font-weight-bold',
+  '--line-height-tight',
+  '--line-height-normal',
+  '--line-height-relaxed',
+  // Shadows
+  '--shadow-sm',
+  '--shadow-md',
+  '--shadow-lg',
 ]
 
 function checkTheme(theme: Record<string, string>, name: string) {
