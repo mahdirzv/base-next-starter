@@ -18,7 +18,7 @@ export function SignInForm() {
   const [loading, setLoading]   = useState(false)
   const router = useRouter()
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -83,7 +83,7 @@ export function SignUpForm() {
   const [loading, setLoading]   = useState(false)
   const router = useRouter()
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setLoading(true)
     setError(null)
