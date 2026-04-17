@@ -5,6 +5,10 @@ import type { NextRequest } from 'next/server'
 import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
 
+const hasSupabaseKeys =
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
 async function createClient() {
   const cookieStore = await cookies()
   return createServerClient(
@@ -41,6 +45,9 @@ function toUser(supabaseUser: {
 
 const supabaseServerOps: AuthServerOps = {
   async getUser() {
+    // Without keys, the proxy no-ops and the Supabase client would crash on init.
+    // Return null so pages render as 'logged out' instead of 500ing.
+    if (!hasSupabaseKeys) return null
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     return user ? toUser(user) : null
@@ -53,6 +60,9 @@ const supabaseServerOps: AuthServerOps = {
   },
 
   async signOut() {
+    if (!hasSupabaseKeys) {
+      redirect('/sign-in')
+    }
     const supabase = await createClient()
     await supabase.auth.signOut()
     redirect('/sign-in')

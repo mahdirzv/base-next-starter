@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 
+const hasSupabaseKeys =
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
 function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +15,32 @@ function createClient() {
   )
 }
 
+function MissingKeysNotice({ title }: { title: string }) {
+  return (
+    <div className="rounded-[var(--radius)] border border-[var(--color-border)] p-6 bg-[var(--color-surface)] text-left w-full max-w-sm">
+      <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+        {title} is not configured yet
+      </h2>
+      <p className="text-sm text-[var(--color-text-muted)] mt-2">
+        Set the following in <code>.env.local</code> to enable Supabase auth, then restart the dev server:
+      </p>
+      <pre className="text-xs bg-[var(--color-background)] rounded p-3 mt-3 overflow-x-auto border border-[var(--color-border)]">
+{`NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
+      </pre>
+      <p className="text-xs text-[var(--color-text-muted)] mt-3">
+        Get keys from <a className="underline" href="https://supabase.com/dashboard" target="_blank" rel="noreferrer">supabase.com/dashboard</a>.
+      </p>
+    </div>
+  )
+}
+
 export function SignInForm() {
+  if (!hasSupabaseKeys) return <MissingKeysNotice title="Sign-in" />
+  return <SignInFormInner />
+}
+
+function SignInFormInner() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState<string | null>(null)
@@ -78,6 +107,11 @@ export function SignInForm() {
 }
 
 export function SignUpForm() {
+  if (!hasSupabaseKeys) return <MissingKeysNotice title="Sign-up" />
+  return <SignUpFormInner />
+}
+
+function SignUpFormInner() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState<string | null>(null)
