@@ -17,6 +17,12 @@
       "NEXT_PUBLIC_SUPABASE_ANON_KEY":     "{{supabase_anon_key}}"
     }
   },
+  "remove_on_scaffold": [
+    "LICENSE",
+    "README.md",
+    "SECURITY.md"
+  ],
+  "generate_readme": "# {{project_name}}\n\n> Scaffolded from [base-next-starter](https://github.com/mahdirzv/base-next-starter). See [`AGENTS.md`](./AGENTS.md) for architecture, module contracts, and gotchas.\n\n## Quick start\n\n```bash\ncp .env.example .env.local   # then fill in your keys\npnpm install\npnpm dev\n```\n\nActive auth provider: `{{auth_provider}}` (switch via `AUTH_PROVIDER` in `.env.local`).\nActive theme: `{{theme_preset}}` (switch via `THEME_PRESET`).\n\n## Commands\n\n| Command | Description |\n|---|---|\n| `pnpm dev` | Dev server |\n| `pnpm build` | Production build |\n| `pnpm test` | Run tests |\n| `pnpm lint` | Lint |\n\n## Learn more\n\n- [`AGENTS.md`](./AGENTS.md) — full architecture, auth module contract, design system, known gotchas. Send this to an AI agent working on the codebase.\n- Starter source: https://github.com/mahdirzv/base-next-starter\n",
   "packs": {
     "auth":     { "kind": "env", "sets": ["AUTH_PROVIDER"] },
     "ui_theme": { "kind": "env", "sets": ["THEME_PRESET"] },
