@@ -1,6 +1,6 @@
 /**
  * Semantic color tokens — CSS var references only.
- * Hex values live in src/modules/ui/themes/*.ts
+ * Hex values live in src/lib/design/themes/*.ts
  * Components use these tokens, never raw hex or theme values directly.
  */
 export const colors = {

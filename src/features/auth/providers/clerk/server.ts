@@ -4,18 +4,19 @@ import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
 import { publicPaths } from './proxy'
 
+// Derive Clerk's User shape from the SDK itself rather than hand-typing the
+// fields. If a Clerk major rename (e.g. `emailAddresses` → `emails`) ships,
+// this picks up the new shape automatically and our destructuring surfaces
+// the breakage at compile time.
+type ClerkUser = NonNullable<Awaited<ReturnType<typeof currentUser>>>
+
 // Call-time check so tests and hot-reloaded dev sessions see the current env.
 // Module-scope capture froze false into the module before tests set env vars.
 const hasClerkKeys = () =>
   Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) &&
   Boolean(process.env.CLERK_SECRET_KEY)
 
-function toUser(clerkUser: {
-  id: string
-  emailAddresses: Array<{ emailAddress: string }>
-  firstName: string | null
-  lastName: string | null
-}): User {
+function toUser(clerkUser: ClerkUser): User {
   const nameParts = [clerkUser.firstName, clerkUser.lastName].filter(Boolean)
   return {
     id: clerkUser.id,

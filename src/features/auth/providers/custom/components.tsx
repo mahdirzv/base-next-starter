@@ -10,7 +10,7 @@ function NotConfigured({ title }: { title: string }) {
         {title} — Custom provider not implemented
       </h2>
       <p className="text-sm text-[var(--color-text-muted)] mt-2">
-        AUTH_PROVIDER=custom is set but no implementation ships with this starter. Implement <code>src/modules/auth/providers/custom/&#123;server,components&#125;.ts</code> with your own auth logic.
+        AUTH_PROVIDER=custom is set but no implementation ships with this starter. Implement <code>src/features/auth/providers/custom/&#123;server,components,proxy&#125;.ts</code> with your own auth logic.
       </p>
     </div>
   )
