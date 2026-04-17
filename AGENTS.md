@@ -136,9 +136,9 @@ src/
     global-error.tsx       # Catastrophic root-layout error boundary
     not-found.tsx          # 404 page
     (auth)/
-      loading.tsx          # Suspense skeleton for sign-in/sign-up (MUST stay inside the group; see gotcha #9)
-      sign-in/page.tsx     # Renders <SignInForm />, force-dynamic
-      sign-up/page.tsx     # Renders <SignUpForm />, force-dynamic
+      loading.tsx                       # Suspense skeleton for sign-in/sign-up (MUST stay inside the group; see gotcha #9)
+      sign-in/[[...rest]]/page.tsx      # Catch-all — Clerk's <SignIn /> probes sub-routes
+      sign-up/[[...rest]]/page.tsx      # Catch-all — Clerk's <SignUp /> probes sub-routes
     (protected)/
       dashboard/page.tsx   # Calls requireUser(), force-dynamic
 proxy.ts                   # Root middleware (Next.js 16) — imports authProxy from @/features/auth/proxy
@@ -319,3 +319,5 @@ pnpm lint       # eslint
 8. **Module-scope `process.env` captures at test import time**: `hasClerkKeys` and `hasSupabaseKeys` guards must be call-time arrow functions. A module-scope `const hasClerkKeys = Boolean(...)` freezes the env-check result at import, which means Vitest tests (which don't have `.env.local` loaded) always see `false` and short-circuit before reaching the mocked API call. Tests must also use `vi.stubEnv` / `vi.unstubAllEnvs` per-case. This bit the project on v0.1.2 and was fixed in v0.1.3.
 
 9. **Root `app/loading.tsx` silently breaks server-side redirects**: a root-level `loading.tsx` wraps every route in a Suspense boundary. When a Server Component throws `NEXT_REDIRECT` (from `requireUser()` etc.) inside that boundary, Next.js responds with **200 + streaming body containing the redirect in the RSC payload** instead of a clean 307. Non-JS clients (curl, SEO crawlers, health probes) see 200 and the redirect never fires. Put `loading.tsx` **inside** route groups (`(auth)/loading.tsx`, `(protected)/loading.tsx`) so it doesn't wrap the redirect-throwing segment. Bit the project on v0.1.4 and was fixed in v0.1.7.
+
+10. **Clerk's `<SignIn />` / `<SignUp />` require catch-all routes**: Clerk's hosted components probe sub-routes at runtime (e.g. `/sign-up/SignUp_clerk_catchall_check_<timestamp>`) for their internal state machine. If those pages are regular routes (`sign-up/page.tsx`), Next.js 404s on the probes and Clerk throws: *"The `<SignUp/>` component is not configured correctly... is not a catch-all route."* Use `sign-in/[[...rest]]/page.tsx` and `sign-up/[[...rest]]/page.tsx`. Our `clerk/proxy.ts` already matches `/sign-in(.*)` and `/sign-up(.*)` as public, so the catch-all children aren't blocked by auth. Bit the project when running against live Clerk dev keys; fixed in v0.1.9.
