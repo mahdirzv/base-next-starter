@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { config } from '@/config'
-import { getUser } from '@/modules/auth'
-import { Button } from '@/modules/ui'
+import { getUser } from '@/features/auth'
+import { Button } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 

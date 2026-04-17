@@ -55,23 +55,25 @@ THEME_PRESET=vivid
 
 ```
 src/
-  config/          # Reads env vars, exports typed config
-  lib/             # Shared utilities (cn)
-  modules/
-    auth/          # Auth module — provider-agnostic public API
+  config/               # Zod-validated env; exports typed config
+  lib/
+    utils.ts            # cn() utility
+    design/             # Design system — CSS var tokens + theme presets (neutral, vivid)
+  components/
+    ui/                 # shadcn-style primitives (Button, Card, Badge, Input, Label)
+  features/
+    auth/               # Auth feature — provider-agnostic public API
       providers/
-        clerk/     # Clerk implementation (default)
-        supabase/  # Supabase implementation
-        firebase/  # Stub
-        custom/    # Stub
-    ui/            # UI module — tokens, themes, components
-      tokens/      # CSS custom property definitions
-      themes/      # Preset values (neutral, vivid)
-      components/  # shadcn primitives (Button, Card, Badge, Input, Label)
+        clerk/          # Clerk implementation (default)
+        supabase/       # Supabase implementation
+        firebase/       # Stub
+        custom/         # Stub
   app/
-    (auth)/        # sign-in, sign-up pages
-    (protected)/   # dashboard (requires auth)
-proxy.ts           # Next.js 16 middleware (replaces middleware.ts)
+    (auth)/             # sign-in, sign-up + loading skeleton
+    (protected)/        # dashboard (requires auth)
+    global-error.tsx    # Root-layout error boundary
+    not-found.tsx       # 404
+proxy.ts                # Next.js 16 middleware (replaces middleware.ts)
 ```
 
 ## Working with an AI agent?

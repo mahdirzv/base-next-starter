@@ -19,7 +19,7 @@ This file is the single source of truth for AI agents working on this codebase. 
 | Clerk | 6.x | `@clerk/nextjs` v6 |
 | Supabase SSR | 0.9.x | `@supabase/ssr` |
 | Vitest | 3.x | `environment: 'node'` (no jsdom) |
-| pnpm | workspace | Single package at `starter/` |
+| pnpm | 10.x | Single package (not a monorepo) |
 
 ---
 
@@ -32,11 +32,11 @@ This file is the single source of truth for AI agents working on this codebase. 
 
 ```typescript
 // proxy.ts — correct
-export { proxy } from '@/modules/auth/providers/clerk/proxy'
+export { proxy } from '@/features/auth/providers/clerk/proxy'
 export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'] }
 
 // WRONG — will silently fail
-export { proxy, config } from '@/modules/auth/providers/clerk/proxy'
+export { proxy, config } from '@/features/auth/providers/clerk/proxy'
 ```
 
 **`cookies()` from `next/headers` must be awaited**
@@ -72,10 +72,10 @@ function handler(e: { preventDefault(): void }) { ... }
 ## Auth conventions (runtime provider dispatch)
 
 - `src/proxy.ts` is the root middleware. It dispatches to the active provider at runtime based on `process.env.AUTH_PROVIDER`.
-- `src/modules/auth/index.ts` exports both server ops (`getUser`, `requireUser`, `signOut`, `authProxy`, `publicPaths`) and UI components (`SignInForm`, `SignUpForm`) — all runtime-dispatched from `AUTH_PROVIDER`. **No code edits are required to switch between Clerk and Supabase.** Just change `AUTH_PROVIDER` in `.env.local` and restart the dev server.
+- `src/features/auth/index.ts` exports both server ops (`getUser`, `requireUser`, `signOut`, `authProxy`, `publicPaths`) and UI components (`SignInForm`, `SignUpForm`) — all runtime-dispatched from `AUTH_PROVIDER`. **No code edits are required to switch between Clerk and Supabase.** Just change `AUTH_PROVIDER` in `.env.local` and restart the dev server.
 - Every provider must **no-op gracefully when its API keys are missing** — proxy returns `NextResponse.next()`, `server.getUser()` returns `null`, and the sign-in/sign-up components render a `MissingKeysNotice` with instructions. This keeps `pnpm dev` usable on a fresh scaffold before the user has configured `.env.local`.
 - Env-var guards must be **call-time arrow functions** (`const hasClerkKeys = () => ...`), never module-scope constants. Module-scope captures env at import time, which breaks Vitest — see "Known gotchas" below.
-- If you add a new provider, mirror the `hasXxxKeys` guard pattern in all three files (`proxy.ts`, `server.ts`, `components.tsx`) and register it in the `serverProviders` / `componentProviders` maps in `src/modules/auth/index.ts`.
+- If you add a new provider, mirror the `hasXxxKeys` guard pattern in all three files (`proxy.ts`, `server.ts`, `components.tsx`) and register it in the `serverProviders` / `componentProviders` maps in `src/features/auth/index.ts`.
 
 ---
 
@@ -83,27 +83,10 @@ function handler(e: { preventDefault(): void }) { ... }
 
 ```
 src/
-  config/index.ts          # Typed config — reads AUTH_PROVIDER, THEME_PRESET env vars
-  lib/utils.ts             # cn() utility (clsx + tailwind-merge)
-  modules/
-    auth/                  # Auth module
-      types.ts             # User, SignInInput, SignUpInput, AuthResult
-      interface.ts         # AuthServerOps, AuthComponentOps interfaces
-      index.ts             # PUBLIC API — import from here only
-      providers/
-        clerk/
-          server.ts        # Implements AuthServerOps
-          components.tsx   # SignInForm, SignUpForm using Clerk's hosted components
-          proxy.ts         # clerkMiddleware export + config
-        supabase/
-          server.ts        # Implements AuthServerOps
-          components.tsx   # SignInForm, SignUpForm with email/password forms
-          proxy.ts         # session refresh logic (Supabase uses server-side cookie logic)
-        firebase/
-          server.ts        # STUB — throws "not implemented"
-        custom/
-          server.ts        # STUB — throws "not implemented"
-    ui/                    # UI module
+  config/index.ts          # Typed config — parses env with zod once at load
+  lib/
+    utils.ts               # cn() utility (clsx + tailwind-merge)
+    design/                # Design system (tokens + theme presets)
       tokens/              # CSS custom property names (var(--*) only — no hex values)
         colors.ts
         typography.ts
@@ -115,30 +98,57 @@ src/
         neutral.ts         # Hex values mapped to CSS var names
         vivid.ts
         index.ts           # getTheme(preset) → Record<string, string>
-      components/          # shadcn-style primitives
-        button.tsx
-        card.tsx
-        badge.tsx
-        input.tsx
-        label.tsx
-        index.ts           # barrel
+      index.ts             # tokens + themes barrel
+  components/
+    ui/                    # shadcn-style primitives (shadcn CLI drops new components here)
+      button.tsx
+      card.tsx
+      badge.tsx
+      input.tsx
+      label.tsx
+      index.ts             # barrel for convenient imports
+  features/
+    auth/                  # Auth feature — provider-agnostic public API
+      types.ts             # User, SignInInput, SignUpInput, AuthResult
+      interface.ts         # AuthServerOps, AuthComponentOps, AuthProxy
       index.ts             # PUBLIC API — import from here only
+      proxy.ts             # Proxy-only entry (src/proxy.ts imports from here)
+      providers/
+        clerk/
+          server.ts        # Implements AuthServerOps
+          components.tsx   # SignInForm, SignUpForm using Clerk's hosted components
+          proxy.ts         # clerkMiddleware export + config
+        supabase/
+          server.ts        # Implements AuthServerOps
+          components.tsx   # SignInForm, SignUpForm with email/password forms
+          proxy.ts         # session refresh logic (Supabase uses server-side cookie logic)
+        firebase/
+          server.ts        # STUB — throws "not implemented"
+          components.tsx   # STUB — renders "not configured" notice
+          proxy.ts         # STUB — no-op
+        custom/
+          server.ts        # STUB — throws "not implemented"
+          components.tsx   # STUB
+          proxy.ts         # STUB — no-op
   app/
     layout.tsx             # Injects theme CSS vars into :root; wraps with ClerkProvider if key present
     page.tsx               # Landing — calls getUser(), force-dynamic
+    global-error.tsx       # Catastrophic root-layout error boundary
+    not-found.tsx          # 404 page
     (auth)/
+      loading.tsx          # Suspense skeleton for sign-in/sign-up (MUST stay inside the group; see gotcha #9)
       sign-in/page.tsx     # Renders <SignInForm />, force-dynamic
       sign-up/page.tsx     # Renders <SignUpForm />, force-dynamic
     (protected)/
       dashboard/page.tsx   # Calls requireUser(), force-dynamic
-proxy.ts                   # Root middleware (Next.js 16)
+proxy.ts                   # Root middleware (Next.js 16) — imports authProxy from @/features/auth/proxy
 ```
 
 ---
 
 ## Auth module contract
 
-**Public API** (`src/modules/auth/index.ts`):
+**Public API** (`src/features/auth/index.ts`):
 ```typescript
 getUser(): Promise<User | null>          // null = not authenticated
 requireUser(): Promise<User>             // redirects to /sign-in if not authed
@@ -152,33 +162,39 @@ SignUpForm: React.ComponentType          // provider-specific sign-up UI
 type User = { id: string; email: string; name?: string }
 ```
 
-**Rule**: Screens NEVER import from providers directly. Always import from `@/modules/auth`.
+**Rule**: Screens NEVER import from providers directly. Always import from `@/features/auth`.
 
 ---
 
-## UI module contract
+## UI + design system
 
-**Public API** (`src/modules/ui/index.ts`):
+**Component primitives** live at `src/components/ui/*` (shadcn-native location). Import via the barrel:
 ```typescript
-Button, Card, CardHeader, CardTitle, CardContent, Badge, Input, Label
+import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Input, Label } from '@/components/ui'
+```
+To add a new shadcn component: `pnpm dlx shadcn@latest add <name>` drops it here automatically (per `components.json` aliases).
+
+**Design tokens + theme presets** live at `src/lib/design/*`:
+```typescript
+import { getTheme, neutralTheme, vividTheme, colors, radius, spacing } from '@/lib/design'
 ```
 
 **How theming works**:
-1. Token files (`src/modules/ui/tokens/*.ts`) define CSS var names as TypeScript constants
+1. Token files (`src/lib/design/tokens/*.ts`) define CSS var names as TypeScript constants
 2. Theme preset files (`neutral.ts`, `vivid.ts`) map those var names to actual hex/value strings
 3. `layout.tsx` calls `getTheme(preset)` and injects a `<style>:root { ... }</style>` block
 4. Components use `var(--color-*)`, `var(--radius)`, etc. — never hardcoded values
 
 **Adding a theme**:
-1. Copy `src/modules/ui/themes/neutral.ts` → `src/modules/ui/themes/yourtheme.ts`
+1. Copy `src/lib/design/themes/neutral.ts` → `src/lib/design/themes/yourtheme.ts`
 2. Change the hex values
-3. Register it in `src/modules/ui/themes/index.ts`
+3. Register it in `src/lib/design/themes/index.ts`
 4. Add the name to `ThemePresetName` in `src/config/index.ts`
 
 **Adding a component**:
-1. Create `src/modules/ui/components/yourcomponent.tsx`
+1. Create `src/components/ui/yourcomponent.tsx`
 2. Use only `var(--*)` CSS tokens — no hardcoded colors or sizes
-3. Export from `src/modules/ui/components/index.ts`
+3. Export from `src/components/ui/index.ts`
 
 ---
 
@@ -190,10 +206,10 @@ To activate a different provider:
 2. Provide the provider's env vars (see `.env.example`)
 3. Restart the dev server
 
-That's it. Both the server ops and the UI components are runtime-dispatched from `AUTH_PROVIDER` via the `serverProviders` / `componentProviders` maps in `src/modules/auth/index.ts`. **No code edits are required.**
+That's it. Both the server ops and the UI components are runtime-dispatched from `AUTH_PROVIDER` via the `serverProviders` / `componentProviders` maps in `src/features/auth/index.ts`. **No code edits are required.**
 
 **Implementing a stub provider** (Firebase or Custom):
-- Implement `AuthServerOps` in `src/modules/auth/providers/{firebase,custom}/server.ts`
+- Implement `AuthServerOps` in `src/features/auth/providers/{firebase,custom}/server.ts`
 - Create a `components.tsx` with `SignInForm` and `SignUpForm`
 - The routing and session protection work automatically once the interface is satisfied
 
@@ -203,7 +219,7 @@ That's it. Both the server ops and the UI components are runtime-dispatched from
 
 ```typescript
 // src/app/(protected)/your-page/page.tsx
-import { requireUser } from '@/modules/auth'
+import { requireUser } from '@/features/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -242,13 +258,13 @@ Test files:
 ```
 src/config/index.test.ts
 src/lib/utils.test.ts
-src/modules/auth/index.test.ts
-src/modules/auth/providers/clerk/server.test.ts
-src/modules/auth/providers/supabase/server.test.ts
-src/modules/auth/providers/firebase/server.test.ts
-src/modules/auth/providers/custom/server.test.ts
-src/modules/ui/tokens/tokens.test.ts
-src/modules/ui/themes/themes.test.ts
+src/features/auth/index.test.ts
+src/features/auth/providers/clerk/server.test.ts
+src/features/auth/providers/supabase/server.test.ts
+src/features/auth/providers/firebase/server.test.ts
+src/features/auth/providers/custom/server.test.ts
+src/lib/design/tokens/tokens.test.ts
+src/lib/design/themes/themes.test.ts
 ```
 
 ---
