@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // Mock next/headers and next/navigation before importing the provider
 vi.mock('next/headers', () => ({
@@ -29,12 +29,19 @@ const mockCreateServerClient = vi.mocked(createServerClient)
 describe('supabase auth provider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Stub keys so hasSupabaseKeys() short-circuit doesn't skip mocked APIs.
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://fake.supabase.co')
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'fake-anon-key')
     mockCreateServerClient.mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
         signOut: vi.fn().mockResolvedValue({ error: null }),
       },
     } as never)
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('has correct interface shape', () => {
@@ -80,5 +87,22 @@ describe('supabase auth provider', () => {
   it('middleware is a no-op', async () => {
     const result = await provider.middleware({} as never)
     expect(result).toBeUndefined()
+  })
+
+  describe('graceful no-keys path', () => {
+    beforeEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    it('getUser returns null without touching supabase client when keys are missing', async () => {
+      const result = await provider.getUser()
+      expect(result).toBeNull()
+      expect(mockCreateServerClient).not.toHaveBeenCalled()
+    })
+
+    it('signOut redirects without calling supabase when keys are missing', async () => {
+      await expect(provider.signOut()).rejects.toThrow('redirect:/sign-in')
+      expect(mockCreateServerClient).not.toHaveBeenCalled()
+    })
   })
 })
