@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { config } from '@/config'
 import { getUser } from '@/modules/auth'
 import { Button } from '@/modules/ui'
 
@@ -36,8 +37,8 @@ export default async function LandingPage() {
       </div>
 
       <p className="text-xs text-[var(--color-text-muted)]">
-        Auth: <code>{process.env.AUTH_PROVIDER ?? 'clerk'}</code> ·
-        Theme: <code>{process.env.THEME_PRESET ?? 'neutral'}</code>
+        Auth: <code>{config.auth.provider}</code> ·
+        Theme: <code>{config.theme.preset}</code>
       </p>
     </main>
   )

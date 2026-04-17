@@ -1,3 +1,4 @@
+import { config } from '@/config'
 import { requireUser, signOut } from '@/modules/auth'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/modules/ui'
 
@@ -50,8 +51,8 @@ export default async function DashboardPage() {
         </Card>
 
         <div className="flex gap-2 flex-wrap">
-          <Badge>Auth: {process.env.AUTH_PROVIDER ?? 'clerk'}</Badge>
-          <Badge variant="outline">Theme: {process.env.THEME_PRESET ?? 'neutral'}</Badge>
+          <Badge>Auth: {config.auth.provider}</Badge>
+          <Badge variant="outline">Theme: {config.theme.preset}</Badge>
         </div>
 
         <p className="text-xs text-[var(--color-text-muted)]">

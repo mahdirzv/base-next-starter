@@ -14,7 +14,6 @@ describe('firebase provider stub', () => {
     expect(typeof provider.getUser).toBe('function')
     expect(typeof provider.requireUser).toBe('function')
     expect(typeof provider.signOut).toBe('function')
-    expect(typeof provider.middleware).toBe('function')
     expect(Array.isArray(provider.publicPaths)).toBe(true)
   })
 })

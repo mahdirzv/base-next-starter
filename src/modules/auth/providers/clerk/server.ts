@@ -1,6 +1,5 @@
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import type { NextRequest } from 'next/server'
 import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
 import { publicPaths } from './proxy'
@@ -51,11 +50,6 @@ const clerkServerOps: AuthServerOps = {
       await client.sessions.revokeSession(sessionId)
     }
     redirect('/sign-in')
-  },
-
-  async middleware(_req: NextRequest) {
-    // Clerk proxy logic is in providers/clerk/proxy.ts
-    return undefined
   },
 
   publicPaths,

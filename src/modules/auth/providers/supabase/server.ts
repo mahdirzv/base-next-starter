@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import type { NextRequest } from 'next/server'
 import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
 
@@ -67,12 +66,6 @@ const supabaseServerOps: AuthServerOps = {
     const supabase = await createClient()
     await supabase.auth.signOut()
     redirect('/sign-in')
-  },
-
-  async middleware(_req: NextRequest) {
-    // Supabase proxy logic is in providers/supabase/proxy.ts
-    // This no-op satisfies the interface; root proxy.ts calls supabaseProxy directly
-    return undefined
   },
 
   publicPaths: ['/sign-in', '/sign-up', '/'],
