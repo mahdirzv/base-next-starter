@@ -1,0 +1,21 @@
+{
+  "scaffold_schema_version": "1",
+  "stack": "nextjs",
+  "description": "Next.js 16 starter: App Router, Tailwind 4, shadcn, provider-agnostic auth (Clerk/Supabase via AUTH_PROVIDER), theme tokens (THEME_PRESET).",
+  "placeholders": [
+    { "find": "\"name\": \"starter\"", "replace_with": "\"name\": \"{{project_slug}}\"" }
+  ],
+  "env_file": {
+    "template": ".env.example",
+    "output": ".env.local",
+    "set": {
+      "AUTH_PROVIDER": "{{auth_provider}}",
+      "THEME_PRESET": "{{theme_preset}}"
+    }
+  },
+  "packs": {
+    "auth":     { "kind": "env", "sets": ["AUTH_PROVIDER"] },
+    "ui_theme": { "kind": "env", "sets": ["THEME_PRESET"] },
+    "ci":       { "paths": [".github"] }
+  }
+}
