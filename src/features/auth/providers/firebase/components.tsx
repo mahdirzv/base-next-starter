@@ -10,7 +10,7 @@ function NotConfigured({ title }: { title: string }) {
         {title} — Firebase provider not configured
       </h2>
       <p className="text-sm text-[var(--color-text-muted)] mt-2">
-        AUTH_PROVIDER=firebase is set but no implementation ships with this starter. Either switch to <code>clerk</code> or <code>supabase</code> in <code>.env.local</code>, or implement the firebase provider in <code>src/modules/auth/providers/firebase/</code>.
+        AUTH_PROVIDER=firebase is set but no implementation ships with this starter. Either switch to <code>clerk</code> or <code>supabase</code> in <code>.env.local</code>, or implement the firebase provider in <code>src/features/auth/providers/firebase/</code>.
       </p>
     </div>
   )

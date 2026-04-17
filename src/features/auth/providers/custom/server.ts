@@ -1,18 +1,22 @@
+import { redirect } from 'next/navigation'
 import type { AuthServerOps } from '../../interface'
 
-const NOT_CONFIGURED = 'Custom auth not configured. Implement AuthServerOps in providers/custom/server.ts.'
-
+/**
+ * Custom provider — stub. Implements the graceful no-keys pattern that
+ * clerk and supabase use: getUser returns null, requireUser redirects to
+ * /sign-in, signOut redirects. Replace with your own session/cookie logic.
+ */
 const customServerOps: AuthServerOps = {
   async getUser() {
-    throw new Error(NOT_CONFIGURED)
+    return null
   },
 
   async requireUser() {
-    throw new Error(NOT_CONFIGURED)
+    redirect('/sign-in')
   },
 
   async signOut() {
-    throw new Error(NOT_CONFIGURED)
+    redirect('/sign-in')
   },
 
   publicPaths: ['/sign-in', '/sign-up', '/'],

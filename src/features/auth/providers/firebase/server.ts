@@ -1,18 +1,25 @@
+import { redirect } from 'next/navigation'
 import type { AuthServerOps } from '../../interface'
 
-const NOT_CONFIGURED = 'Firebase auth not configured. Set AUTH_PROVIDER=firebase and install firebase/firebase-admin.'
-
+/**
+ * Firebase provider — stub. Implements the graceful no-keys pattern that
+ * clerk and supabase use: getUser returns null (so pages render as
+ * "logged out"), requireUser redirects to /sign-in, signOut redirects.
+ *
+ * Replace with a real Firebase Admin SDK implementation. Install
+ * `firebase-admin` and read the session cookie set by the Firebase client SDK.
+ */
 const firebaseServerOps: AuthServerOps = {
   async getUser() {
-    throw new Error(NOT_CONFIGURED)
+    return null
   },
 
   async requireUser() {
-    throw new Error(NOT_CONFIGURED)
+    redirect('/sign-in')
   },
 
   async signOut() {
-    throw new Error(NOT_CONFIGURED)
+    redirect('/sign-in')
   },
 
   publicPaths: ['/sign-in', '/sign-up', '/'],

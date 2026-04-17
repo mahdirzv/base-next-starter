@@ -3,7 +3,7 @@
  *
  * Imports from `@/features/auth/proxy` (proxy-only entry) rather than the
  * barrel to avoid pulling 'use client' component modules into the proxy's
- * server evaluation path. See `src/modules/auth/proxy.ts` for why.
+ * server evaluation path. See `src/features/auth/proxy.ts` for why.
  *
  * Switching provider: set AUTH_PROVIDER in .env.local and restart. No code
  * edits here — new providers register in the proxyProviders map.

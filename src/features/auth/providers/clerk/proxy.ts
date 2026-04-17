@@ -37,6 +37,6 @@ export const proxy = (req: NextRequest) => {
   return (realClerkProxy as unknown as (req: NextRequest) => Response)(req)
 }
 
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-}
+// Note: the root `src/proxy.ts` exports its own `config` matcher — Next.js
+// reads the matcher from the root file only. No `export const config` here
+// deliberately, to keep a single matcher source of truth.
