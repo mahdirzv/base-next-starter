@@ -1,7 +1,24 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+export const publicPaths = ['/sign-in', '/sign-up', '/']
+
+const hasSupabaseKeys =
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
 export async function supabaseProxy(request: NextRequest): Promise<NextResponse> {
+  // Without keys, no-op so the app still boots — useful for first-run scaffolds.
+  if (!hasSupabaseKeys) {
+    if (typeof console !== 'undefined') {
+      console.warn(
+        '[auth] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set. ' +
+          'Auth is disabled; add them to .env.local to enable Supabase.',
+      )
+    }
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -26,5 +43,3 @@ export async function supabaseProxy(request: NextRequest): Promise<NextResponse>
 
   return supabaseResponse
 }
-
-export const publicPaths = ['/sign-in', '/sign-up', '/']

@@ -1,7 +1,7 @@
 {
   "scaffold_schema_version": "1",
   "stack": "nextjs",
-  "description": "Next.js 16 starter: App Router, Tailwind 4, shadcn, provider-agnostic auth (Clerk/Supabase via AUTH_PROVIDER), theme tokens (THEME_PRESET).",
+  "description": "Next.js 16 starter: App Router, Tailwind 4, shadcn, provider-agnostic auth (Clerk/Supabase via AUTH_PROVIDER), theme tokens (THEME_PRESET). Auth providers no-op gracefully when keys are missing.",
   "placeholders": [
     { "find": "\"name\": \"starter\"", "replace_with": "\"name\": \"{{project_slug}}\"" }
   ],
@@ -9,8 +9,12 @@
     "template": ".env.example",
     "output": ".env.local",
     "set": {
-      "AUTH_PROVIDER": "{{auth_provider}}",
-      "THEME_PRESET": "{{theme_preset}}"
+      "AUTH_PROVIDER":                     "{{auth_provider}}",
+      "THEME_PRESET":                      "{{theme_preset}}",
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "{{clerk_publishable_key}}",
+      "CLERK_SECRET_KEY":                  "{{clerk_secret_key}}",
+      "NEXT_PUBLIC_SUPABASE_URL":          "{{supabase_url}}",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY":     "{{supabase_anon_key}}"
     }
   },
   "packs": {
