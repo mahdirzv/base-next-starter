@@ -5,6 +5,13 @@
  * renders a retry UI. Must be a client component — Next.js requires it.
  *
  * Replace the default UI with your product's branded error page.
+ *
+ * ⚠ Important: Next.js uses thrown sentinel errors for control flow
+ * (`redirect()` → `NEXT_REDIRECT`, `notFound()` → `NEXT_NOT_FOUND`).
+ * These reach `error.tsx` before the framework's built-in handler — if we
+ * render our error UI for them, the redirect/not-found is swallowed
+ * (e.g. a protected page would 200 with the error UI instead of 307ing to
+ * /sign-in). Re-throw them so Next.js handles them upstream.
  */
 import { useEffect } from 'react'
 import { Button } from '@/modules/ui'
@@ -16,6 +23,16 @@ export default function RootError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  // Re-throw framework sentinel errors so Next.js handles them (redirect → 307,
+  // notFound → not-found.tsx). Checked during render so the error UI never
+  // renders for these cases.
+  if (
+    error.digest?.startsWith('NEXT_REDIRECT') ||
+    error.digest?.startsWith('NEXT_NOT_FOUND')
+  ) {
+    throw error
+  }
+
   useEffect(() => {
     // TODO: forward to Sentry / your logger of choice.
     console.error('[app error]', error)
