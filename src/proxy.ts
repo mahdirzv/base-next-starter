@@ -1,12 +1,14 @@
 /**
  * Root proxy (Next.js 16 — replaces middleware.ts).
  *
- * Delegates to the active auth provider's proxy via @/modules/auth.
- * Switching provider: set AUTH_PROVIDER in .env.local and restart.
- * No code edits here when adding new providers — they register themselves
- * in the module's proxyProviders map.
+ * Imports from `@/modules/auth/proxy` (proxy-only entry) rather than the
+ * barrel to avoid pulling 'use client' component modules into the proxy's
+ * server evaluation path. See `src/modules/auth/proxy.ts` for why.
+ *
+ * Switching provider: set AUTH_PROVIDER in .env.local and restart. No code
+ * edits here — new providers register in the proxyProviders map.
  */
-import { authProxy } from '@/modules/auth'
+import { authProxy } from '@/modules/auth/proxy'
 
 export const proxy = authProxy
 
