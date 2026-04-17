@@ -10,13 +10,16 @@ export const metadata: Metadata = {
 }
 
 // ClerkProvider requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY to be set.
-// When not configured (e.g. using a different auth provider), render without it.
-const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+// Read at call time so dev hot-reloads and prod builds with different envs
+// behave correctly. Matches the call-time guard pattern used in provider code.
+const getClerkKey = () => process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const theme = getTheme(config.theme.preset)
+  const clerkKey = getClerkKey()
 
-  // Convert theme object to inline CSS custom properties string
+  // Convert theme object to inline CSS custom properties. Values come from
+  // our own themes/*.ts files (hex + units), so `;` and `<` cannot appear.
   const themeVars = Object.entries(theme)
     .map(([key, value]) => `${key}: ${value}`)
     .join('; ')

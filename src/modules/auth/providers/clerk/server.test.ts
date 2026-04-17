@@ -45,7 +45,6 @@ describe('clerk auth provider', () => {
     expect(typeof provider.getUser).toBe('function')
     expect(typeof provider.requireUser).toBe('function')
     expect(typeof provider.signOut).toBe('function')
-    expect(typeof provider.middleware).toBe('function')
     expect(Array.isArray(provider.publicPaths)).toBe(true)
     expect(provider.publicPaths).toContain('/')
   })
@@ -98,11 +97,6 @@ describe('clerk auth provider', () => {
 
     await expect(provider.signOut()).rejects.toThrow('redirect:/sign-in')
     expect(revokeSession).not.toHaveBeenCalled()
-  })
-
-  it('middleware is a no-op', async () => {
-    const result = await provider.middleware({} as never)
-    expect(result).toBeUndefined()
   })
 
   describe('graceful no-keys path', () => {

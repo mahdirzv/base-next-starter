@@ -19,13 +19,10 @@ export interface AuthServerOps {
   signOut(): Promise<void>
 
   /**
-   * Called by the root proxy.ts on every request.
-   * In Next.js 16, 'middleware' is renamed to 'proxy' at the file level,
-   * but this method is internal and keeps the name 'middleware' for clarity.
+   * Paths that bypass auth protection (no redirect to sign-in).
+   * Informational — the active provider's proxy uses its own copy
+   * (some providers need regex patterns, some need exact paths).
    */
-  middleware(req: NextRequest): Promise<NextResponse | void>
-
-  /** Paths that bypass auth protection (no redirect to sign-in). */
   publicPaths: string[]
 }
 
@@ -33,7 +30,7 @@ export interface AuthComponentOps {
   /**
    * Sign-in form component.
    * Handles all provider-specific logic internally.
-   * On success: redirects to /dashboard (or CLERK after-sign-in URL).
+   * On success: redirects to /dashboard.
    */
   SignInForm: React.ComponentType
 
@@ -44,4 +41,15 @@ export interface AuthComponentOps {
   SignUpForm: React.ComponentType
 }
 
-export type AuthProvider = AuthServerOps & AuthComponentOps
+/**
+ * Proxy function. Called by the root src/proxy.ts on every request the
+ * Next.js matcher selects. In Next.js 16, 'middleware' is renamed to 'proxy'
+ * at the file level — providers export a function named `<provider>Proxy`.
+ *
+ * Return type accepts `Response` (not just `NextResponse`) because Clerk's
+ * `clerkMiddleware` returns a plain `Response`. `NextResponse extends Response`,
+ * so returning either is valid.
+ */
+export type AuthProxy = (
+  req: NextRequest,
+) => Response | NextResponse | void | Promise<Response | NextResponse | void>

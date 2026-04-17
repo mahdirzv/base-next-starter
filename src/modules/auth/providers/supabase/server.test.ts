@@ -48,7 +48,6 @@ describe('supabase auth provider', () => {
     expect(typeof provider.getUser).toBe('function')
     expect(typeof provider.requireUser).toBe('function')
     expect(typeof provider.signOut).toBe('function')
-    expect(typeof provider.middleware).toBe('function')
     expect(Array.isArray(provider.publicPaths)).toBe(true)
     expect(provider.publicPaths).toContain('/sign-in')
     expect(provider.publicPaths).toContain('/')
@@ -82,11 +81,6 @@ describe('supabase auth provider', () => {
 
   it('requireUser redirects to /sign-in when not authenticated', async () => {
     await expect(provider.requireUser()).rejects.toThrow('redirect:/sign-in')
-  })
-
-  it('middleware is a no-op', async () => {
-    const result = await provider.middleware({} as never)
-    expect(result).toBeUndefined()
   })
 
   describe('graceful no-keys path', () => {

@@ -1,4 +1,3 @@
-import type { NextRequest } from 'next/server'
 import type { AuthServerOps } from '../../interface'
 
 const NOT_CONFIGURED = 'Firebase auth not configured. Set AUTH_PROVIDER=firebase and install firebase/firebase-admin.'
@@ -13,10 +12,6 @@ const firebaseServerOps: AuthServerOps = {
   },
 
   async signOut() {
-    throw new Error(NOT_CONFIGURED)
-  },
-
-  async middleware(_req: NextRequest) {
     throw new Error(NOT_CONFIGURED)
   },
 
