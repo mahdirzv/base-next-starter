@@ -1,0 +1,35 @@
+name: build
+
+# Runs on every PR and on push to main. Proves the starter itself still
+# compiles and its tests pass. scaffold-factory's smoke workflow consumes
+# this repo via git+ pinned tag, so a broken commit on main blocks every
+# new scaffold — this CI catches that before merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck + build
+        run: pnpm build
+      - name: Unit tests
+        run: pnpm test
