@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
 import { config } from '@/config'
 import { getTheme } from '@/lib/design/themes'
 import './globals.css'
@@ -14,9 +13,11 @@ export const metadata: Metadata = {
 // behave correctly. Matches the call-time guard pattern used in provider code.
 const getClerkKey = () => process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// RootLayout is async so we can lazy-import ClerkProvider ONLY when
+// AUTH_PROVIDER=clerk. Under any other provider the @clerk/nextjs chunk is
+// never loaded — keeps the supabase/firebase/custom bundles Clerk-free.
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const theme = getTheme(config.theme.preset)
-  const clerkKey = getClerkKey()
 
   // Convert theme object to inline CSS custom properties. Values come from
   // our own themes/*.ts files (hex + units), so `;` and `<` cannot appear.
@@ -24,17 +25,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     .map(([key, value]) => `${key}: ${value}`)
     .join('; ')
 
+  const head = (
+    <head>
+      <style>{`:root { ${themeVars} }`}</style>
+    </head>
+  )
+
+  // Fast path: any non-clerk provider OR clerk with no keys. Skip the dynamic
+  // import entirely — Clerk's package never enters the bundle.
+  const clerkKey = getClerkKey()
+  if (config.auth.provider !== 'clerk' || !clerkKey) {
+    return (
+      <html lang="en">
+        {head}
+        <body>{children}</body>
+      </html>
+    )
+  }
+
+  // Clerk path: dynamic import so non-clerk builds don't pay the cost.
+  const { ClerkProvider } = await import('@clerk/nextjs')
   return (
     <html lang="en">
-      <head>
-        <style>{`:root { ${themeVars} }`}</style>
-      </head>
+      {head}
       <body>
-        {clerkKey ? (
-          <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
-        ) : (
-          children
-        )}
+        <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
       </body>
     </html>
   )
