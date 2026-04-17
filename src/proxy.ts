@@ -1,20 +1,19 @@
 /**
- * Root proxy — delegates to the active auth provider.
- * In Next.js 16, this file replaces middleware.ts.
- * The named export must be 'proxy'.
+ * Root proxy — dispatches to the active auth provider at runtime.
+ * In Next.js 16, this file replaces middleware.ts; the named export must be 'proxy'.
  *
- * Clerk: re-exports clerkMiddleware() as 'proxy' (required by Clerk's architecture).
- * Supabase: replace the export below with supabaseProxy from the supabase provider.
- *
- * TO SWITCH FROM CLERK:
- *   Replace the export below with:
- *   export { supabaseProxy as proxy } from '@/modules/auth/providers/supabase/proxy'
- *   export const config = { matcher: [...] }
+ * Switching provider: set AUTH_PROVIDER in .env.local and restart. No code edits here.
+ * Supported providers with their own proxy: clerk (default), supabase.
+ * firebase / custom fall back to clerkProxy — implement a proxy.ts in those
+ * providers' directories and extend this file to route to it.
  */
 
-// ─── Clerk (default) ──────────────────────────────────────────────────────────
-// config must be defined directly here — Next.js cannot statically analyze a re-export
-export { proxy } from '@/modules/auth/providers/clerk/proxy'
+import { proxy as clerkProxy } from '@/modules/auth/providers/clerk/proxy'
+import { supabaseProxy } from '@/modules/auth/providers/supabase/proxy'
+
+const provider = process.env.AUTH_PROVIDER ?? 'clerk'
+
+export const proxy = provider === 'supabase' ? supabaseProxy : clerkProxy
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
