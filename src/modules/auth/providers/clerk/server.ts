@@ -5,7 +5,9 @@ import type { AuthServerOps } from '../../interface'
 import type { User } from '../../types'
 import { publicPaths } from './proxy'
 
-const hasClerkKeys =
+// Call-time check so tests and hot-reloaded dev sessions see the current env.
+// Module-scope capture froze false into the module before tests set env vars.
+const hasClerkKeys = () =>
   Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) &&
   Boolean(process.env.CLERK_SECRET_KEY)
 
@@ -28,7 +30,7 @@ const clerkServerOps: AuthServerOps = {
     // When keys are missing, the proxy no-ops and ClerkProvider isn't mounted —
     // calling currentUser() would throw about missing middleware. Return null so
     // pages that call getUser() render as 'logged out' instead of 500ing.
-    if (!hasClerkKeys) return null
+    if (!hasClerkKeys()) return null
     const user = await currentUser()
     return user ? toUser(user) : null
   },
@@ -40,7 +42,7 @@ const clerkServerOps: AuthServerOps = {
   },
 
   async signOut() {
-    if (!hasClerkKeys) {
+    if (!hasClerkKeys()) {
       redirect('/sign-in')
     }
     const { sessionId } = await auth()

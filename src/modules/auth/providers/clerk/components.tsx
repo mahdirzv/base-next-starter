@@ -2,7 +2,8 @@
 
 import { SignIn, SignUp } from '@clerk/nextjs'
 
-const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+// Call-time check — see server.ts for rationale.
+const hasClerkKey = () => Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
 
 function MissingKeysNotice({ title }: { title: string }) {
   return (
@@ -25,7 +26,7 @@ CLERK_SECRET_KEY=sk_test_...`}
 }
 
 export function SignInForm() {
-  if (!hasClerkKey) return <MissingKeysNotice title="Sign-in" />
+  if (!hasClerkKey()) return <MissingKeysNotice title="Sign-in" />
   return (
     <SignIn
       appearance={{
@@ -39,7 +40,7 @@ export function SignInForm() {
 }
 
 export function SignUpForm() {
-  if (!hasClerkKey) return <MissingKeysNotice title="Sign-up" />
+  if (!hasClerkKey()) return <MissingKeysNotice title="Sign-up" />
   return (
     <SignUp
       appearance={{

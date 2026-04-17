@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 
-const hasSupabaseKeys =
+// Call-time check — see clerk/server.ts for rationale.
+const hasSupabaseKeys = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
@@ -36,7 +37,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...`}
 }
 
 export function SignInForm() {
-  if (!hasSupabaseKeys) return <MissingKeysNotice title="Sign-in" />
+  if (!hasSupabaseKeys()) return <MissingKeysNotice title="Sign-in" />
   return <SignInFormInner />
 }
 
@@ -107,7 +108,7 @@ function SignInFormInner() {
 }
 
 export function SignUpForm() {
-  if (!hasSupabaseKeys) return <MissingKeysNotice title="Sign-up" />
+  if (!hasSupabaseKeys()) return <MissingKeysNotice title="Sign-up" />
   return <SignUpFormInner />
 }
 

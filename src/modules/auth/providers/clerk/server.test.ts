@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => { throw new Error(`redirect:${url}`) }),
@@ -26,11 +26,19 @@ const mockClerkClient = vi.mocked(clerkClient)
 describe('clerk auth provider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Stub keys so hasClerkKeys() short-circuit doesn't skip the mocked APIs.
+    // Separate tests below verify the no-keys path explicitly.
+    vi.stubEnv('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'pk_test_fake')
+    vi.stubEnv('CLERK_SECRET_KEY', 'sk_test_fake')
     mockCurrentUser.mockResolvedValue(null)
     mockAuth.mockResolvedValue({ sessionId: null } as never)
     mockClerkClient.mockResolvedValue({
       sessions: { revokeSession: vi.fn() },
     } as never)
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
   })
 
   it('has correct interface shape', () => {
@@ -95,5 +103,23 @@ describe('clerk auth provider', () => {
   it('middleware is a no-op', async () => {
     const result = await provider.middleware({} as never)
     expect(result).toBeUndefined()
+  })
+
+  describe('graceful no-keys path', () => {
+    beforeEach(() => {
+      // Clear the stubs set in the outer beforeEach.
+      vi.unstubAllEnvs()
+    })
+
+    it('getUser returns null without calling currentUser when keys are missing', async () => {
+      const result = await provider.getUser()
+      expect(result).toBeNull()
+      expect(mockCurrentUser).not.toHaveBeenCalled()
+    })
+
+    it('signOut redirects without calling Clerk APIs when keys are missing', async () => {
+      await expect(provider.signOut()).rejects.toThrow('redirect:/sign-in')
+      expect(mockAuth).not.toHaveBeenCalled()
+    })
   })
 })

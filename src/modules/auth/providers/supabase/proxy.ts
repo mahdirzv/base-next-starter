@@ -3,13 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export const publicPaths = ['/sign-in', '/sign-up', '/']
 
-const hasSupabaseKeys =
+// Call-time check — see clerk/server.ts for rationale.
+const hasSupabaseKeys = () =>
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
   Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
 export async function supabaseProxy(request: NextRequest): Promise<NextResponse> {
   // Without keys, no-op so the app still boots — useful for first-run scaffolds.
-  if (!hasSupabaseKeys) {
+  if (!hasSupabaseKeys()) {
     if (typeof console !== 'undefined') {
       console.warn(
         '[auth] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY are not set. ' +
