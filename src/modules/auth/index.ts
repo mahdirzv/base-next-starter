@@ -3,12 +3,12 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Import everything auth-related from here. Never import from providers directly.
  *
- * Active provider: controlled by AUTH_PROVIDER env var (default: clerk)
- *
- * TO SWITCH PROVIDERS:
- *   1. Set AUTH_PROVIDER=<name> in .env.local
+ * Switching providers is fully env-driven:
+ *   1. Set AUTH_PROVIDER=<name> in .env.local (clerk | supabase | firebase | custom)
  *   2. Fill in the provider's env vars (see .env.example)
- *   3. Change the components re-export below to point to the new provider
+ *   3. Restart the dev server
+ *
+ * Both server ops and UI components dispatch at runtime — no code edits needed.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -20,6 +20,11 @@ import supabaseOps from './providers/supabase/server'
 import firebaseOps from './providers/firebase/server'
 import customOps   from './providers/custom/server'
 
+import * as clerkUI    from './providers/clerk/components'
+import * as supabaseUI from './providers/supabase/components'
+import * as firebaseUI from './providers/firebase/components'
+import * as customUI   from './providers/custom/components'
+
 const serverProviders: Record<string, AuthServerOps> = {
   clerk:    clerkOps,
   supabase: supabaseOps,
@@ -27,15 +32,28 @@ const serverProviders: Record<string, AuthServerOps> = {
   custom:   customOps,
 }
 
-const provider = serverProviders[config.auth.provider]
+const componentProviders = {
+  clerk:    clerkUI,
+  supabase: supabaseUI,
+  firebase: firebaseUI,
+  custom:   customUI,
+} as const
 
+const provider = serverProviders[config.auth.provider]
 if (!provider) {
   throw new Error(
     `Unknown AUTH_PROVIDER: "${config.auth.provider}". Valid options: clerk | supabase | firebase | custom`
   )
 }
 
-// ─── Server ops (config-driven at runtime) ────────────────────────────────────
+const ui = componentProviders[config.auth.provider as keyof typeof componentProviders]
+if (!ui) {
+  throw new Error(
+    `Unknown AUTH_PROVIDER: "${config.auth.provider}". Valid options: clerk | supabase | firebase | custom`
+  )
+}
+
+// ─── Server ops (runtime-dispatched) ──────────────────────────────────────────
 export const getUser     = () => provider.getUser()
 export const requireUser = () => provider.requireUser()
 export const signOut     = () => provider.signOut()
@@ -43,6 +61,6 @@ export const signOut     = () => provider.signOut()
 export const authProxy   = provider.middleware.bind(provider)
 export const publicPaths = provider.publicPaths
 
-// ─── Components (change this import to switch provider's UI) ─────────────────
-// To switch: update this line to: import { SignInForm, SignUpForm } from './providers/<name>/components'
-export { SignInForm, SignUpForm } from './providers/clerk/components'
+// ─── Components (runtime-dispatched, same pattern as server ops) ──────────────
+export const SignInForm = ui.SignInForm
+export const SignUpForm = ui.SignUpForm
