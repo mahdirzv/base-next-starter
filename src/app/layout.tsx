@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { config } from '@/config'
-import { getTheme } from '@/modules/ui/themes'
+import { getTheme } from '@/lib/design/themes'
 import './globals.css'
 
 export const metadata: Metadata = {

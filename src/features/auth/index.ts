@@ -9,7 +9,7 @@
  *   3. Restart the dev server
  *
  * Server ops AND components dispatch at runtime from config.auth.provider.
- * The root proxy imports from `@/modules/auth/proxy` directly (narrow entry)
+ * The root proxy imports from `@/features/auth/proxy` directly (narrow entry)
  * to avoid pulling 'use client' component modules into the proxy evaluation
  * path — see modules/auth/proxy.ts for why.
  * ─────────────────────────────────────────────────────────────────────────────

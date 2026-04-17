@@ -3,7 +3,7 @@ import type { User } from './types'
 
 /**
  * Every auth provider must implement this interface.
- * Screens import from @/modules/auth — never from providers directly.
+ * Screens import from @/features/auth — never from providers directly.
  */
 export interface AuthServerOps {
   /** Returns the current user, or null if not authenticated. */

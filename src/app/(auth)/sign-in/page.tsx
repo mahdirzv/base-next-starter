@@ -1,4 +1,4 @@
-import { SignInForm } from '@/modules/auth'
+import { SignInForm } from '@/features/auth'
 
 export const dynamic = 'force-dynamic'
 

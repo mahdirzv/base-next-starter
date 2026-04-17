@@ -1,6 +1,6 @@
 import { config } from '@/config'
-import { requireUser, signOut } from '@/modules/auth'
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/modules/ui'
+import { requireUser, signOut } from '@/features/auth'
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
 
         <p className="text-xs text-[var(--color-text-muted)]">
           This dashboard is a placeholder. Replace it with your product main screen.
-          The auth module (<code>@/modules/auth</code>) and UI module (<code>@/modules/ui</code>)
+          The auth module (<code>@/features/auth</code>) and UI module (<code>@/components/ui</code>)
           are ready to use.
         </p>
       </div>
