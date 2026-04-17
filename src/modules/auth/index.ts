@@ -8,25 +8,22 @@
  *   2. Fill in the provider's env vars (see .env.example)
  *   3. Restart the dev server
  *
- * Server ops, proxy, AND components all dispatch at runtime — no code edits.
+ * Server ops AND components dispatch at runtime from config.auth.provider.
+ * The root proxy imports from `@/modules/auth/proxy` directly (narrow entry)
+ * to avoid pulling 'use client' component modules into the proxy evaluation
+ * path — see modules/auth/proxy.ts for why.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import { config } from '@/config'
 import type { AuthProviderName } from '@/config'
-import type { AuthServerOps, AuthComponentOps, AuthProxy } from './interface'
+import type { AuthServerOps, AuthComponentOps } from './interface'
 
 // Server ops
 import clerkOps    from './providers/clerk/server'
 import supabaseOps from './providers/supabase/server'
 import firebaseOps from './providers/firebase/server'
 import customOps   from './providers/custom/server'
-
-// Proxies
-import { proxy as clerkProxy }   from './providers/clerk/proxy'
-import { supabaseProxy }         from './providers/supabase/proxy'
-import { firebaseProxy }         from './providers/firebase/proxy'
-import { customProxy }           from './providers/custom/proxy'
 
 // UI components (namespace-imported, then narrowed to AuthComponentOps shape)
 import * as clerkUI    from './providers/clerk/components'
@@ -39,13 +36,6 @@ const serverProviders: Record<AuthProviderName, AuthServerOps> = {
   supabase: supabaseOps,
   firebase: firebaseOps,
   custom:   customOps,
-}
-
-const proxyProviders: Record<AuthProviderName, AuthProxy> = {
-  clerk:    clerkProxy,
-  supabase: supabaseProxy,
-  firebase: firebaseProxy,
-  custom:   customProxy,
 }
 
 const componentProviders: Record<AuthProviderName, AuthComponentOps> = {
@@ -64,12 +54,10 @@ export const requireUser = () => serverOps.requireUser()
 export const signOut     = () => serverOps.signOut()
 export const publicPaths = serverOps.publicPaths
 
-// ─── Root proxy ───────────────────────────────────────────────────────────────
-// Consumed by src/proxy.ts. Keeps the abstraction honest: switching provider
-// flips the proxy with zero code edits.
-export const authProxy: AuthProxy = proxyProviders[active]
-
 // ─── Components (runtime-dispatched) ──────────────────────────────────────────
 const ui = componentProviders[active]
 export const SignInForm = ui.SignInForm
 export const SignUpForm = ui.SignUpForm
+
+// Note: `authProxy` lives in `./proxy.ts` (proxy-only entry) — import from
+// there if you ever need it. The root src/proxy.ts does that already.

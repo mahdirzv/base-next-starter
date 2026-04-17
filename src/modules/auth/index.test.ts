@@ -36,9 +36,9 @@ describe('auth module public API', () => {
     expect(typeof auth.signOut).toBe('function')
   })
 
-  it('exports proxy function (middleware delegate)', async () => {
-    const auth = await import('./index')
-    expect(typeof auth.authProxy).toBe('function')
+  it('exports authProxy from the proxy-only entry', async () => {
+    const proxyMod = await import('./proxy')
+    expect(typeof proxyMod.authProxy).toBe('function')
   })
 
   it('exports publicPaths array', async () => {
