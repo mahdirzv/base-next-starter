@@ -76,4 +76,4 @@ proxy.ts           # Next.js 16 middleware (replaces middleware.ts)
 
 ## Working with an AI agent?
 
-Send [`SETUP_FOR_AGENTS.md`](./SETUP_FOR_AGENTS.md) to your agent instead of this file. It contains the full technical context, module contracts, known gotchas, and extension patterns — structured for machine consumption.
+Send [`AGENTS.md`](./AGENTS.md) to your agent instead of this file. It contains the full technical context, module contracts, known gotchas, and extension patterns — structured for machine consumption.
